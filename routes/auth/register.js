@@ -1,6 +1,10 @@
-const express = require("express");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const path = require('path');
+const DatauriParser=require("datauri/parser");
+const parser = new DatauriParser();
+
+
 const cloudinary = require('cloudinary').v2;
 
 dotenv.config();
@@ -11,7 +15,10 @@ const { cloudinaryConfig } = require("../../config");
 cloudinary.config(cloudinaryConfig);
 
 const registerRoute = async (req, res)=>{
-    const {photo, firstname, lastname, email, username, password} = req.body;
+    // const {photo} = req.files;
+    const {firstname, lastname, email, username, password} = req.body;
+    // console.log(photo);
+    console.log(req.body)
 
     try{
         if(await User.findOne({email: { $eq: email }})){
@@ -21,8 +28,11 @@ const registerRoute = async (req, res)=>{
             return res.status(409).json({error: `User with username: ${username}, already exists`, ok: false});
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const uploadResponse = await cloudinary.uploader.upload(photo, { folder: process.env.CLOUDINARY_FOLDER });
-        const user = new User({photo: uploadResponse.secure_url, firstname, lastname, email, username, password: hashedPassword});
+        // const extName = path.extname(photo.name).toString();
+        // const file64 = parser.format(extName, photo.data);
+        // const uploadResponse = await cloudinary.uploader.upload(file64.content, { folder: process.env.CLOUDINARY_FOLDER });
+        // fs.unlink(photo.tempFilePat);
+        const user = new User({firstname, lastname, email, username, password: hashedPassword});
         user.save();
         return res.status(201).json({user: { uid: user._id, username: user.username }, message: 'User created successfully', ok: true});
     }
@@ -32,4 +42,4 @@ const registerRoute = async (req, res)=>{
     }
 };
 
-module.exports = registerRoute;
+module.exports = {registerRoute};

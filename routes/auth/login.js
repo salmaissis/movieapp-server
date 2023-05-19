@@ -5,12 +5,12 @@ dotenv.config();
 
 const User = require("../../models/User");
 
-export const loginRoute = async (req, res)=>{
-    const {emailorusername, password} = req.body;
+const loginRoute = async (req, res)=>{
+    const {username, email, password} = req.body;
     
     try{
 
-        const user = await User.findOne({$or: [{username: { $eq: emailorusername } }, {email: { $eq: emailorusername } }]});        
+        const user = await User.findOne({$or: [{username: { $eq: username } }, {email: { $eq: email } }]});        
         if(!user || !await bcrypt.compare(password, user.password)){ 
             return res.status(401).json({error: 'Invalid password or Email|Username', ok: false});
         }
@@ -23,4 +23,4 @@ export const loginRoute = async (req, res)=>{
     }
 };
 
-module.exports = loginRoute;
+module.exports = {loginRoute};
